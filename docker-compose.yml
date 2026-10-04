@@ -1,0 +1,116 @@
+# ==============================================================================
+# DOCKER-COMPOSE - STACK DE PRODUÇÃO GRUPO ELOIZIO
+# Servidor: VPS Hostinger / Ubuntu 22.04+ com Traefik, PHP 8.2 e PostgreSQL 16
+# Domínio Principal: grupoeloizio.com.br
+# ==============================================================================
+version: '3.8'
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. TRAEFIK - REVERSE PROXY & CERTIFICADOS SSL AUTOMÁTICOS (LET'S ENCRYPT)
+  # ----------------------------------------------------------------------------
+  traefik:
+    image: traefik:v2.10
+    container_name: eloizio-traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "80:80"     # HTTP (Redireciona para HTTPS)
+      - "443:443"   # HTTPS
+      - "8080:8080" # Dashboard Traefik (Opcional/Seguro)
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=mecanicoeloizio@gmail.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+    networks:
+      - eloizio-net
+
+  # ----------------------------------------------------------------------------
+  # 2. WEB APP - APACHE + PHP 8.2 (Com driver PDO_PGSQL ativado)
+  # Onde ficam os arquivos publicados: /var/www/html
+  # ----------------------------------------------------------------------------
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: eloizio-hub-web
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      # Mapeamento do diretório de publicação (permite atualizar arquivos sem rebuild)
+      - ./php-dist:/var/www/html
+      - ./php-dist/data:/var/www/html/data
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${POSTGRES_DB:-grupoeloizio}
+      - DB_USER=${POSTGRES_USER:-postgres}
+      - DB_PASS=${POSTGRES_PASSWORD:-eloizio_postgres_sec_2026}
+      - CAMILLA_WHATSAPP=5521996134073
+      - ECOSYSTEM_DOMAIN=grupoeloizio.com.br
+    labels:
+      - "traefik.enable=true"
+      # Roteamento do Domínio Principal e Subdomínios
+      - "traefik.http.routers.eloizio-web.rule=Host(`grupoeloizio.com.br`, `www.grupoeloizio.com.br`)"
+      - "traefik.http.routers.eloizio-web.entrypoints=websecure"
+      - "traefik.http.routers.eloizio-web.tls.certresolver=letsencrypt"
+      - "traefik.http.services.eloizio-web.loadbalancer.server.port=80"
+      # Compressão gzip/brotli
+      - "traefik.http.middlewares.eloizio-compress.compress=true"
+      - "traefik.http.routers.eloizio-web.middlewares=eloizio-compress"
+    networks:
+      - eloizio-net
+
+  # ----------------------------------------------------------------------------
+  # 3. BANCO DE DADOS - POSTGRESQL 16 (postgres:16-alpine)
+  # Banco: grupoeloizio | Tabelas: clientes, conversas, cerebro_camilla
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: eloizio-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-grupoeloizio}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-eloizio_postgres_sec_2026}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      # Volume persistente para os dados nunca se perderem
+      - postgres_data:/var/lib/postgresql/data
+      # Script DDL que inicializa automaticamente as tabelas na primeira execução
+      - ./php-dist/postgres_schema.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "127.0.0.1:5432:5432" # Exposto apenas para localhost do host por segurança
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-grupoeloizio}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - eloizio-net
+
+# ------------------------------------------------------------------------------
+# VOLUMES E REDES
+# ------------------------------------------------------------------------------
+volumes:
+  postgres_data:
+    name: eloizio_postgres_data
+
+networks:
+  eloizio-net:
+    name: eloizio_network
+    driver: bridge

@@ -1,0 +1,41 @@
+# CONFIGURAÇÃO DE ACESSO APACHE / HOSTINGER VPS DEBIAN
+# Corrige o erro 403 Forbidden definindo os arquivos de índice prioritários
+
+DirectoryIndex index.php index.html install.php
+
+<IfModule mod_authz_core.c>
+    Require all granted
+</IfModule>
+
+Options -Indexes +FollowSymLinks
+RewriteEngine On
+
+# Permitir acesso direto ao instalador se ainda não configurado
+<IfModule mod_rewrite.c>
+    # Se config.php não existir e tentar acessar a raiz, encaminha para install.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{DOCUMENT_ROOT}/config.php !-f
+    RewriteRule ^$ install.php [L]
+</IfModule>
+
+# Forçar cabeçalhos de segurança e MIME
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Access-Control-Allow-Origin "*"
+</IfModule>
+
+# Compressão Gzip para Carregamento Ultrarrápido
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript application/json
+</IfModule>
+
+# Suporte e Caching de Imagens WebP e Assets
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+</IfModule>

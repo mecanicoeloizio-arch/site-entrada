@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manual de Configuração Docker & Publicação - Grupo Eloizio</title>
+  <style>
+    :root {
+      --primary: #0084ff;
+      --primary-dark: #0056b3;
+      --secondary: #00c6ff;
+      --bg: #f8fafc;
+      --text: #0f172a;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --code-bg: #0f172a;
+      --code-text: #38bdf8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: var(--text);
+      background-color: var(--bg);
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      padding: 40px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+
+    .logo-title h1 {
+      font-size: 24px;
+      color: var(--primary-dark);
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-title p {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    .badge-doc {
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid #bae6fd;
+    }
+
+    .print-actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .btn-print {
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 8px rgba(0, 132, 255, 0.3);
+      transition: background 0.2s;
+    }
+
+    .btn-print:hover {
+      background: var(--primary-dark);
+    }
+
+    h2 {
+      font-size: 18px;
+      color: #1e293b;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      border-left: 4px solid var(--primary);
+      padding-left: 10px;
+    }
+
+    h3 {
+      font-size: 15px;
+      color: #334155;
+      margin-top: 18px;
+      margin-bottom: 8px;
+    }
+
+    p, li {
+      font-size: 13.5px;
+      color: #334155;
+    }
+
+    ul, ol {
+      margin-left: 20px;
+      margin-bottom: 14px;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    .box-info {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin: 16px 0;
+    }
+
+    .box-info strong {
+      color: #166534;
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .box-warning {
+      background: #fffbeb;
+      border: 1px solid #fef3c7;
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin: 16px 0;
+    }
+
+    .box-warning strong {
+      color: #92400e;
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    pre {
+      background: var(--code-bg);
+      color: #e2e8f0;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      margin: 12px 0 18px 0;
+      line-height: 1.5;
+      border: 1px solid #334155;
+    }
+
+    code {
+      background: #e2e8f0;
+      color: #0f172a;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+
+    .table-spec {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 12.5px;
+    }
+
+    .table-spec th, .table-spec td {
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      text-align: left;
+    }
+
+    .table-spec th {
+      background: #f1f5f9;
+      color: #334155;
+      font-weight: 700;
+    }
+
+    .diagram {
+      background: #0f172a;
+      color: #38bdf8;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 11.5px;
+      line-height: 1.4;
+      margin: 14px 0;
+    }
+
+    /* Print / PDF Specific CSS */
+    @media print {
+      body {
+        padding: 0;
+        background: #ffffff;
+      }
+      .container {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        max-width: 100%;
+      }
+      .print-actions {
+        display: none !important;
+      }
+      pre {
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
+        white-space: pre-wrap !important;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Print Button Bar (Hidden in PDF/Print) -->
+  <div class="print-actions">
+    <button class="btn-print" onclick="window.print()">
+      🖨️ Salvar ou Imprimir este Manual como PDF
+    </button>
+    <span style="font-size: 12px; color: #64748b; align-self: center;">
+      Dica: Na janela de impressão, selecione <strong>"Salvar como PDF"</strong> e marque <strong>"Gráficos de segundo plano"</strong>.
+    </span>
+  </div>
+
+  <!-- Header -->
+  <div class="header-bar">
+    <div class="logo-title">
+      <h1>Grupo Eloizio & Vanguard</h1>
+      <p>Manual Técnico Oficial de Publicação Docker, Traefik & PostgreSQL 16</p>
+    </div>
+    <div class="badge-doc">
+      VERSÃO PRODUÇÃO 2026
+    </div>
+  </div>
+
+  <!-- Identificação & Resumo -->
+  <table class="table-spec">
+    <tr>
+      <th>Domínio Oficial</th>
+      <td><code>grupoeloizio.com.br</code> (e subdomínios vinculados)</td>
+    </tr>
+    <tr>
+      <th>Diretório Host</th>
+      <td><code>/var/www/grupoeloizio</code> (onde os arquivos ficam publicados)</td>
+    </tr>
+    <tr>
+      <th>Stack Docker</th>
+      <td>Traefik v2.10 (SSL Let's Encrypt) + PHP 8.2 Apache + PostgreSQL 16</td>
+    </tr>
+    <tr>
+      <th>E-mail do Administrador</th>
+      <td><code>mecanicoeloizio@gmail.com</code> | WhatsApp: <code>(21) 98764-8727</code></td>
+    </tr>
+  </table>
+
+  <div class="box-info">
+    <strong>✅ Resposta Prática sobre Publicação e Instalação:</strong>
+    No Docker, <strong>não é necessário instalar nada manualmente dentro do sistema operacional do servidor</strong>. Você apenas coloca os arquivos na pasta mapeada do host e executa o comando <code>docker compose up -d</code>. O Docker baixa as imagens, instala os drivers PostgreSQL (PDO_PGSQL), configura o Traefik com SSL automático e publica o site em menos de 60 segundos.
+  </div>
+
+  <!-- Diagrama de Arquitetura -->
+  <h2>1. Arquitetura da Publicação do Contêiner</h2>
+  <div class="diagram">
+Internet / Usuários (HTTP :80 / HTTPS :443)
+       │
+       ▼
+[ Contêiner Traefik ] ──► Emite e renova certificado SSL Let's Encrypt automático
+       │
+       ▼ (Rede interna: eloizio_network)
+[ Contêiner Web: eloizio-hub-web ] (Apache + PHP 8.2)
+       │  Volume mapeado: ./php-dist ◄───► /var/www/html (Arquivos do Site)
+       │
+       ▼ (Porta interna :5432)
+[ Contêiner Banco: eloizio-postgres ] (PostgreSQL 16)
+       │  Volume persistente: eloizio_postgres_data (Clientes, Conversas, Camilla)
+  </div>
+
+  <!-- Onde os arquivos ficam -->
+  <h2>2. Onde os Arquivos Ficam Publicados no Servidor</h2>
+  <p>No seu servidor (VPS Ubuntu ou Debian), crie a seguinte estrutura de pastas:</p>
+  <pre>
+/var/www/grupoeloizio/
+├── docker-compose.yml     # Orquestrador dos contêineres
+├── Dockerfile             # Imagem do Apache + PHP 8.2 com PDO_PGSQL
+├── .env                   # Senhas e chaves secretas do sistema
+├── letsencrypt/           # Pasta onde o Traefik grava o certificado SSL (acme.json)
+└── php-dist/              # ◄─── PASTA ONDE FICAM OS ARQUIVOS PUBLICADOS DO SITE
+    ├── index.php          # Página inicial do Mini Shopping e Hub
+    ├── admin.php          # Painel Administrativo
+    ├── api.php            # Roteador da API REST (/api/health, /api/services, etc.)
+    ├── config.php         # Conexão com o PostgreSQL e Fallback JSON
+    ├── .htaccess          # Regras do Apache para URLs amigáveis
+    ├── install.php        # Assistente automático de criação de tabelas
+    ├── postgres_schema.sql# Estrutura DDL das tabelas
+    └── data/              # Cache local e storage JSON de segurança
+  </pre>
+
+  <div class="page-break"></div>
+
+  <!-- Docker Compose YAML -->
+  <h2>3. Arquivo: docker-compose.yml Completo</h2>
+  <p>Crie o arquivo <code>/var/www/grupoeloizio/docker-compose.yml</code> com o conteúdo abaixo:</p>
+  <pre><code>version: '3.8'
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. TRAEFIK - REVERSE PROXY COM SSL AUTOMÁTICO (LET'S ENCRYPT)
+  # ----------------------------------------------------------------------------
+  traefik:
+    image: traefik:v2.10
+    container_name: eloizio-traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "80:80"     # Redireciona HTTP para HTTPS automaticamente
+      - "443:443"   # HTTPS seguro com certificado
+    command:
+      - "--api.dashboard=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=mecanicoeloizio@gmail.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+    networks:
+      - eloizio-net
+
+  # ----------------------------------------------------------------------------
+  # 2. APACHE + PHP 8.2 COM PDO_PGSQL ATIVADO
+  # ----------------------------------------------------------------------------
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: eloizio-hub-web
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      # ONDE OS ARQUIVOS FICAM: Mapeia a pasta do host para dentro do contêiner
+      - ./php-dist:/var/www/html
+      - ./php-dist/data:/var/www/html/data
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=grupoeloizio
+      - DB_USER=postgres
+      - DB_PASS=eloizio_postgres_sec_2026
+      - CAMILLA_WHATSAPP=5521996134073
+      - ECOSYSTEM_DOMAIN=grupoeloizio.com.br
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.eloizio-web.rule=Host(`grupoeloizio.com.br`, `www.grupoeloizio.com.br`)"
+      - "traefik.http.routers.eloizio-web.entrypoints=websecure"
+      - "traefik.http.routers.eloizio-web.tls.certresolver=letsencrypt"
+      - "traefik.http.services.eloizio-web.loadbalancer.server.port=80"
+      - "traefik.http.middlewares.eloizio-compress.compress=true"
+      - "traefik.http.routers.eloizio-web.middlewares=eloizio-compress"
+    networks:
+      - eloizio-net
+
+  # ----------------------------------------------------------------------------
+  # 3. POSTGRESQL 16 (BANCO DE DADOS UNIFICADO)
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: eloizio-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: grupoeloizio
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: eloizio_postgres_sec_2026
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./php-dist/postgres_schema.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d grupoeloizio"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - eloizio-net
+
+volumes:
+  postgres_data:
+    name: eloizio_postgres_data
+
+networks:
+  eloizio-net:
+    name: eloizio_network
+    driver: bridge</code></pre>
+
+  <!-- Dockerfile -->
+  <h2>4. Arquivo: Dockerfile (Apache + Drivers)</h2>
+  <p>Crie o arquivo <code>/var/www/grupoeloizio/Dockerfile</code>:</p>
+  <pre><code>FROM php:8.2-apache
+
+# Instalação das extensões necessárias (PostgreSQL, cURL, GD, ZIP)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq-dev \
+    libcurl4-openssl-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    curl \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        pdo \
+        pdo_pgsql \
+        pgsql \
+        curl \
+        gd \
+        zip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Habilita o mod_rewrite do Apache
+RUN a2enmod rewrite headers
+
+WORKDIR /var/www/html
+
+EXPOSE 80
+
+CMD ["apache2-foreground"]</code></pre>
+
+  <div class="page-break"></div>
+
+  <!-- Passo a Passo -->
+  <h2>5. Passo a Passo Completo de Instalação no Servidor</h2>
+
+  <h3>Etapa 1: Conectar no seu Servidor VPS via SSH</h3>
+  <pre><code>ssh root@seu_ip_do_servidor</code></pre>
+
+  <h3>Etapa 2: Instalar o Docker e o Docker Compose (se ainda não tiver)</h3>
+  <pre><code>apt update && apt upgrade -y
+curl -fsSL https://get.docker.com | sh
+docker --version
+docker compose version</code></pre>
+
+  <h3>Etapa 3: Criar a Pasta do Projeto e Subpastas</h3>
+  <pre><code>mkdir -p /var/www/grupoeloizio/letsencrypt
+mkdir -p /var/www/grupoeloizio/php-dist
+touch /var/www/grupoeloizio/letsencrypt/acme.json
+chmod 600 /var/www/grupoeloizio/letsencrypt/acme.json</code></pre>
+
+  <h3>Etapa 4: Subir os Arquivos do Site</h3>
+  <p>Transfira o arquivo compactado <code>site.zip</code> para <code>/var/www/grupoeloizio/</code> e descompacte:</p>
+  <pre><code>cd /var/www/grupoeloizio
+unzip site.zip -d php-dist/
+chmod -R 775 php-dist/
+chown -R 33:33 php-dist/data/  # Permissão para o usuário www-data do Apache</code></pre>
+
+  <h3>Etapa 5: Iniciar Todos os Contêineres</h3>
+  <p>Execute um único comando para construir e inicializar a stack inteira:</p>
+  <pre><code>cd /var/www/grupoeloizio
+docker compose up -d --build</code></pre>
+
+  <h3>Etapa 6: Verificar se os Contêineres Estão Rodando</h3>
+  <pre><code>docker compose ps</code></pre>
+  <p>Você deverá ver os 3 contêineres com status <code>Up (healthy)</code>:</p>
+  <ul>
+    <li><code>eloizio-traefik</code> - Up (portas 80, 443)</li>
+    <li><code>eloizio-hub-web</code> - Up (porta 80)</li>
+    <li><code>eloizio-postgres</code> - Up (healthy, porta 5432)</li>
+  </ul>
+
+  <!-- Comandos Úteis -->
+  <h2>6. Comandos Úteis de Manutenção Diária</h2>
+  <table class="table-spec">
+    <tr>
+      <th>Ação Desejada</th>
+      <th>Comando a Executar</th>
+    </tr>
+    <tr>
+      <td>Ver logs em tempo real do Apache/PHP</td>
+      <td><code>docker compose logs -f web</code></td>
+    </tr>
+    <tr>
+      <td>Ver logs de certificados SSL do Traefik</td>
+      <td><code>docker compose logs -f traefik</code></td>
+    </tr>
+    <tr>
+      <td>Reiniciar contêineres sem perder dados</td>
+      <td><code>docker compose restart</code></td>
+    </tr>
+    <tr>
+      <td>Fazer Backup do Banco PostgreSQL</td>
+      <td><code>docker exec -t eloizio-postgres pg_dump -U postgres grupoeloizio &gt; backup_$(date +%F).sql</code></td>
+    </tr>
+    <tr>
+      <td>Restaurar Backup do Banco</td>
+      <td><code>cat backup.sql | docker exec -i eloizio-postgres psql -U postgres -d grupoeloizio</code></td>
+    </tr>
+    <tr>
+      <td>Atualizar arquivos do site</td>
+      <td>Basta colar os novos arquivos em <code>/var/www/grupoeloizio/php-dist/</code>. Atualização imediata!</td>
+    </tr>
+  </table>
+
+  <!-- Rodapé -->
+  <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid var(--border); font-size: 11px; color: #94a3b8; text-align: center;">
+    Manual Técnico gerado para Grupo Eloizio & Vanguard · Desenvolvido por Camilla Faria (Head de TI & Atendimento Inteligente)
+  </div>
+</div>
+
+</body>
+</html>

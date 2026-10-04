@@ -1,0 +1,6 @@
+{
+  "name": "Elo & Vanguard Hub - Mini Shopping & Triagem",
+  "description": "Hub inteligente de soluções: EloMak (Máquinas de Costura São Gonçalo), Vanguard Cursos Online e Elo Contábil Digital BPO & RH com triagem de atendimento por Camilla.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
